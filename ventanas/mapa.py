@@ -419,9 +419,24 @@ class VentanaMapa:
                 elif "Muro" in type(elemento).__name__:
                     color = COLOR_MURO
                     texto = "🧱"
-                elif "Torre" in type(elemento).__name__:
+                elif type(elemento).__name__ == "TorreBasica":
                     color = COLOR_TORRE
                     texto = "🗼"
+                elif type(elemento).__name__ == "TorrePesada":
+                    color = "#1a4a1a"
+                    texto = "🏯"
+                elif type(elemento).__name__ == "TorreMagica":
+                    color = "#2d0a4e"
+                    texto = "🔮"
+                elif type(elemento).__name__ == "Soldado":
+                    color = COLOR_UNIDAD
+                    texto = "🗡️"
+                elif type(elemento).__name__ == "Tanque":
+                    color = "#7a3500"
+                    texto = "🛡️"
+                elif type(elemento).__name__ == "UnidadRapida":
+                    color = "#5a2080"
+                    texto = "💨"
                 else:
                     color = COLOR_UNIDAD
                     texto = "⚔️"
