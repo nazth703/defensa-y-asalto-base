@@ -103,13 +103,13 @@ class VentanaMapa:
             frame_central, width=ancho, height=alto,
             bg=COLOR_VACIO, highlightthickness=0
         )
-        self.canvas.grid(row=0, column=0, padx=(0, 10))
+        self.canvas.pack(side="left", padx=(0, 10))
         self.canvas.bind("<Button-1>", self.click_casilla)
         self.canvas.bind("<Motion>", self.hover_casilla)
 
         # Panel lateral
-        self.frame_lateral = tk.Frame(frame_central, bg="#16213e", width=200, pady=10)
-        self.frame_lateral.grid(row=0, column=1, sticky="n")
+        self.frame_lateral = tk.Frame(frame_central, bg="#16213e", width=220, pady=10)
+        self.frame_lateral.pack(side="left", fill="y")
         self.frame_lateral.pack_propagate(False)
 
         self.construir_panel_lateral()
@@ -361,12 +361,15 @@ class VentanaMapa:
 
                 elemento = self.matriz[fila][col]
 
-                if elemento is None:
-                    color = COLOR_VACIO
-                    texto = ""
-                elif hasattr(elemento, 'vida') and elemento == self.base:
+                # La base siempre se muestra en su posición
+                es_base = (fila == self.base.fila and col == self.base.columna)
+
+                if es_base:
                     color = COLOR_BASE
                     texto = "🏰"
+                elif elemento is None:
+                    color = COLOR_VACIO
+                    texto = ""
                 elif "Muro" in type(elemento).__name__:
                     color = COLOR_MURO
                     texto = "🧱"
@@ -385,6 +388,15 @@ class VentanaMapa:
                         x1 + TAMANIO_CASILLA // 2,
                         y1 + TAMANIO_CASILLA // 2,
                         text=texto, font=("Arial", 18)
+                    )
+
+                # Mostrar vida de la base encima
+                if es_base:
+                    self.canvas.create_text(
+                        x1 + TAMANIO_CASILLA // 2,
+                        y1 + TAMANIO_CASILLA - 8,
+                        text=f"{self.base.vida}", font=("Arial", 7, "bold"),
+                        fill="white"
                     )
 
     def actualizar_info(self):
@@ -411,6 +423,21 @@ class VentanaMapa:
             return
         self.fase = "combate"
         self.actualizar_info()
+
+        # Mostrar vida de la base en el panel lateral
+        for widget in self.frame_lateral.winfo_children():
+            widget.destroy()
+        tk.Label(self.frame_lateral, text="⚔️ COMBATE ⚔️",
+                 font=("Arial", 13, "bold"), bg="#16213e", fg="#e94560").pack(pady=10)
+        tk.Label(self.frame_lateral, text="🏰 Vida de la Base:",
+                 font=("Arial", 10), bg="#16213e", fg="#aaaaaa").pack()
+        self.label_vida_base = tk.Label(
+            self.frame_lateral,
+            text=f"{self.base.vida} / {self.base.vida_maxima}",
+            font=("Arial", 14, "bold"), bg="#16213e", fg="#00ff88"
+        )
+        self.label_vida_base.pack(pady=5)
+
         self.ventana.after(500, self.turno_combate)
 
     def turno_combate(self):
@@ -428,11 +455,19 @@ class VentanaMapa:
         # Limpiar muertos
         self.unidades = [u for u in self.unidades if not u.esta_muerta()]
         self.torres   = [t for t in self.torres   if not t.esta_destruida()]
-        self.muros    = [m for m in self.muros     if not m.esta_destruida()]
+        self.muros    = [m for m in self.muros     if not m.esta_destruido()]
 
         # Actualizar matriz
         self._sincronizar_matriz()
         self.dibujar_mapa()
+
+        # Actualizar label de vida de la base
+        if hasattr(self, 'label_vida_base'):
+            color = '#00ff88' if self.base.vida > 250 else '#ffaa00' if self.base.vida > 100 else '#ff4444'
+            self.label_vida_base.config(
+                text=f'{self.base.vida} / {self.base.vida_maxima}',
+                fg=color
+            )
 
         # Verificar fin de ronda
         if self.base.esta_destruida():
