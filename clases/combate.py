@@ -44,7 +44,7 @@ def ejecutar_turno(torres, muros, unidades, base, matriz, dinero_defensor, diner
             danio = unidad.atacar_torre(torre_bloqueando)
             ganancia_atacante += danio // 5
 
-            if torre_bloqueando.esta_destruida():
+            if torre_bloqueando.esta_destruido() if hasattr(torre_bloqueando, 'esta_destruido') else torre_bloqueando.esta_destruida():
                 # Limpiar de la matriz
                 if hasattr(torre_bloqueando, 'fila') and torre_bloqueando.fila is not None:
                     matriz[torre_bloqueando.fila][torre_bloqueando.columna] = None
