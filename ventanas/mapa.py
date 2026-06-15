@@ -436,6 +436,37 @@ class VentanaMapa:
                         text=texto, font=("Arial", 18)
                     )
 
+                # Mostrar barra de vida y stats en torres, muros y unidades
+                if elemento is not None and not es_base:
+                    if hasattr(elemento, 'vida') and hasattr(elemento, 'vida_maxima'):
+                        # Barra de vida
+                        barra_ancho = TAMANIO_CASILLA - 6
+                        porcentaje = elemento.vida / elemento.vida_maxima
+                        color_barra = "#00ff88" if porcentaje > 0.5 else "#ffaa00" if porcentaje > 0.25 else "#ff4444"
+                        # Fondo de la barra
+                        self.canvas.create_rectangle(
+                            x1 + 3, y2 - 7, x1 + 3 + barra_ancho, y2 - 3,
+                            fill="#333333", outline=""
+                        )
+                        # Barra de vida actual
+                        self.canvas.create_rectangle(
+                            x1 + 3, y2 - 7, x1 + 3 + int(barra_ancho * porcentaje), y2 - 3,
+                            fill=color_barra, outline=""
+                        )
+                        # Número de vida
+                        self.canvas.create_text(
+                            x1 + TAMANIO_CASILLA // 2, y1 + 7,
+                            text=f"{elemento.vida}", font=("Arial", 7, "bold"),
+                            fill="white"
+                        )
+                    # Mostrar daño de torres y unidades
+                    if hasattr(elemento, 'danio'):
+                        self.canvas.create_text(
+                            x1 + TAMANIO_CASILLA - 5, y1 + 7,
+                            text=f"⚡{elemento.danio}", font=("Arial", 6, "bold"),
+                            fill="#ffdd00", anchor="e"
+                        )
+
                 # Mostrar vida de la base encima
                 if es_base:
                     self.canvas.create_text(
@@ -495,6 +526,16 @@ class VentanaMapa:
 
         self.ventana.after(500, self.turno_combate)
 
+    def mostrar_danio_flotante(self, fila, col, cantidad, color="#ff4444"):
+        """Muestra un número de daño flotante en el canvas que desaparece."""
+        x = col * TAMANIO_CASILLA + TAMANIO_CASILLA // 2
+        y = fila * TAMANIO_CASILLA + TAMANIO_CASILLA // 2
+        texto_id = self.canvas.create_text(
+            x, y, text=f"-{cantidad}",
+            font=("Arial", 11, "bold"), fill=color
+        )
+        self.ventana.after(600, lambda: self.canvas.delete(texto_id))
+
     def turno_combate(self):
         """Ejecuta un turno de combate y programa el siguiente."""
         from clases.combate import ejecutar_turno
@@ -506,6 +547,19 @@ class VentanaMapa:
 
         self.dinero_defensor = resultado["dinero_defensor"]
         self.dinero_atacante = resultado["dinero_atacante"]
+
+        # Mostrar daño flotante en torres que atacaron
+        for torre in self.torres:
+            if torre.fila is not None and torre.contador_turnos > 0:
+                for u in self.unidades:
+                    if not u.esta_muerta() and torre.puede_atacar(u.fila, u.columna):
+                        self.mostrar_danio_flotante(u.fila, u.columna, torre.danio, "#ff4444")
+                        break
+
+        # Mostrar daño flotante en la base si fue atacada
+        for u in self.unidades:
+            if not u.esta_muerta() and u.columna <= self.base.columna:
+                self.mostrar_danio_flotante(self.base.fila, self.base.columna, u.danio, "#ff8800")
 
         # Limpiar muertos
         self.unidades = [u for u in self.unidades if not u.esta_muerta()]
