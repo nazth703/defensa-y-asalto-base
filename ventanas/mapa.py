@@ -105,6 +105,7 @@ class VentanaMapa:
         )
         self.canvas.pack(side="left", padx=(0, 10))
         self.canvas.bind("<Button-1>", self.click_casilla)
+        self.canvas.bind("<Button-3>", self.click_derecho_casilla)
         self.canvas.bind("<Motion>", self.hover_casilla)
 
         # Panel lateral
@@ -247,7 +248,7 @@ class VentanaMapa:
         )
 
     def click_casilla(self, event):
-        """Maneja el click en el mapa para colocar elementos."""
+        """Maneja el click izquierdo en el mapa para colocar elementos."""
         col = event.x // TAMANIO_CASILLA
         fila = event.y // TAMANIO_CASILLA
 
@@ -262,6 +263,51 @@ class VentanaMapa:
             self._colocar_defensa(fila, col)
         else:
             self._colocar_unidad(fila, col)
+
+    def click_derecho_casilla(self, event):
+        """Click derecho: retira el elemento y devuelve el dinero completo."""
+        col = event.x // TAMANIO_CASILLA
+        fila = event.y // TAMANIO_CASILLA
+
+        if not (0 <= fila < FILAS and 0 <= col < COLUMNAS):
+            return
+        if self.fase == "combate":
+            return  # No se puede retirar durante el combate
+
+        elemento = self.matriz[fila][col]
+        if elemento is None or elemento == self.base:
+            return  # No hay nada que retirar o es la base
+
+        costos = {
+            "Muro": 20, "Torre Básica": 50,
+            "Torre Pesada": 120, "Torre Mágica": 80,
+            "Soldado": 30, "Tanque": 100, "Unidad Rápida": 50
+        }
+        nombre = elemento.nombre if hasattr(elemento, 'nombre') else ""
+        reembolso = costos.get(nombre, 0)
+
+        # Retirar del mapa y listas
+        self.matriz[fila][col] = None
+        self.torres  = [t for t in self.torres  if not (t.fila == fila and t.columna == col)]
+        self.muros   = [m for m in self.muros   if not (m.fila == fila and m.columna == col)]
+        self.unidades = [u for u in self.unidades if not (u.fila == fila and u.columna == col)]
+
+        # Devolver dinero
+        if self.fase == "construccion":
+            self.dinero_defensor += reembolso
+            if hasattr(self, 'label_dinero_def'):
+                self.label_dinero_def.config(text=f"💰 ${self.dinero_defensor}")
+        else:
+            self.dinero_atacante += reembolso
+            if hasattr(self, 'label_dinero_atk'):
+                self.label_dinero_atk.config(text=f"💰 ${self.dinero_atacante}")
+
+        self.dibujar_mapa()
+        if hasattr(self, 'label_seleccion'):
+            self.label_seleccion.config(
+                text=f"✅ Retirado!\n+${reembolso} devuelto",
+                fg="#ffaa00"
+            )
 
     def _colocar_defensa(self, fila, col):
         """Coloca una torre o muro en el mapa."""
@@ -398,6 +444,15 @@ class VentanaMapa:
                         text=f"{self.base.vida}", font=("Arial", 7, "bold"),
                         fill="white"
                     )
+                    # Si hay unidades atacando la base, mostrar indicador
+                    unidades_en_base = [u for u in self.unidades
+                                       if u.fila == self.base.fila and u.columna <= self.base.columna and not u.esta_muerta()]
+                    if unidades_en_base:
+                        self.canvas.create_text(
+                            x1 + TAMANIO_CASILLA - 8,
+                            y1 + 8,
+                            text="⚔️", font=("Arial", 10)
+                        )
 
     def actualizar_info(self):
         """Actualiza los labels de información."""
@@ -481,6 +536,7 @@ class VentanaMapa:
         """Actualiza la matriz con el estado actual de los elementos."""
         self.matriz = [[None] * COLUMNAS for _ in range(FILAS)]
         self.matriz[self.base.fila][self.base.columna] = self.base
+        # Unidades en la base siguen en el mapa (atacando)
         for t in self.torres:
             if t.fila is not None:
                 self.matriz[t.fila][t.columna] = t
