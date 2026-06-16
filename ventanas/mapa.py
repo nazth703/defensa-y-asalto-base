@@ -398,6 +398,47 @@ class VentanaMapa:
         """Redibuja todo el mapa."""
         self.canvas.delete("all")
 
+        # Dibujar línea divisoria entre zona defensa y ataque
+        x_div = 5 * TAMANIO_CASILLA
+        self.canvas.create_line(
+            x_div, 0, x_div, FILAS * TAMANIO_CASILLA,
+            fill="#e94560", width=2, dash=(6, 3)
+        )
+
+        # Etiquetas de zona
+        self.canvas.create_text(
+            2 * TAMANIO_CASILLA, 8,
+            text=f"🏰 Zona {self.faccion1}",
+            font=("Arial", 7, "bold"), fill="#aaaaaa"
+        )
+        self.canvas.create_text(
+            7 * TAMANIO_CASILLA, 8,
+            text=f"⚔️ Zona {self.faccion2}",
+            font=("Arial", 7, "bold"), fill="#aaaaaa"
+        )
+
+        # Colores de zona según facción
+        zonas_defensa = {
+            "Medieval":   "#1e1200",
+            "Naturaleza": "#0a1a0a",
+            "Oscura":     "#0f0010",
+        }
+        zonas_ataque = {
+            "Medieval":   "#1a0a00",
+            "Naturaleza": "#001a0a",
+            "Oscura":     "#100010",
+        }
+        colores_torre = {
+            "Medieval":   "#5c3317",
+            "Naturaleza": "#1a5c17",
+            "Oscura":     "#3d0a5c",
+        }
+        colores_muro = {
+            "Medieval":   "#8B4513",
+            "Naturaleza": "#2d6e1a",
+            "Oscura":     "#4a0a6e",
+        }
+
         for fila in range(FILAS):
             for col in range(COLUMNAS):
                 x1 = col * TAMANIO_CASILLA
@@ -406,28 +447,44 @@ class VentanaMapa:
                 y2 = y1 + TAMANIO_CASILLA
 
                 elemento = self.matriz[fila][col]
-
-                # La base siempre se muestra en su posición
                 es_base = (fila == self.base.fila and col == self.base.columna)
+
+                # Color de fondo por zona
+                if col <= 4:
+                    color_fondo = zonas_defensa.get(self.faccion1, COLOR_VACIO)
+                else:
+                    color_fondo = zonas_ataque.get(self.faccion2, COLOR_VACIO)
 
                 if es_base:
                     color = COLOR_BASE
                     texto = "🏰"
                 elif elemento is None:
-                    color = COLOR_VACIO
+                    color = color_fondo
                     texto = ""
                 elif "Muro" in type(elemento).__name__:
-                    color = COLOR_MURO
+                    color = colores_muro.get(self.faccion1, COLOR_MURO)
                     texto = "🧱"
                 elif type(elemento).__name__ == "TorreBasica":
-                    color = COLOR_TORRE
+                    color = colores_torre.get(self.faccion1, COLOR_TORRE)
                     texto = "🗼"
                 elif type(elemento).__name__ == "TorrePesada":
-                    color = "#1a4a1a"
+                    color = colores_torre.get(self.faccion1, "#1a4a1a")
                     texto = "🏯"
                 elif type(elemento).__name__ == "TorreMagica":
-                    color = "#2d0a4e"
+                    color = colores_torre.get(self.faccion1, "#2d0a4e")
                     texto = "🔮"
+                elif type(elemento).__name__ == "Soldado":
+                    color = COLOR_UNIDAD
+                    texto = "🗡️"
+                elif type(elemento).__name__ == "Tanque":
+                    color = "#7a3500"
+                    texto = "🛡️"
+                elif type(elemento).__name__ == "UnidadRapida":
+                    color = "#5a2080"
+                    texto = "💨"
+                else:
+                    color = COLOR_UNIDAD
+                    texto = "⚔️"
                 elif type(elemento).__name__ == "Soldado":
                     color = COLOR_UNIDAD
                     texto = "🗡️"
