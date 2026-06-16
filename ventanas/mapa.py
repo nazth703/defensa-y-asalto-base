@@ -485,18 +485,6 @@ class VentanaMapa:
                 else:
                     color = COLOR_UNIDAD
                     texto = "⚔️"
-                elif type(elemento).__name__ == "Soldado":
-                    color = COLOR_UNIDAD
-                    texto = "🗡️"
-                elif type(elemento).__name__ == "Tanque":
-                    color = "#7a3500"
-                    texto = "🛡️"
-                elif type(elemento).__name__ == "UnidadRapida":
-                    color = "#5a2080"
-                    texto = "💨"
-                else:
-                    color = COLOR_UNIDAD
-                    texto = "⚔️"
 
                 self.canvas.create_rectangle(x1, y1, x2, y2,
                     fill=color, outline=COLOR_BORDE, width=1)
