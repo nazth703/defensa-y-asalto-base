@@ -45,6 +45,7 @@ class VentanaMapa:
         # Dinero inicial
         self.dinero_defensor = 200
         self.dinero_atacante = 200
+        self.pausado = False
 
         # Estructuras en el mapa
         self.matriz = [[None] * COLUMNAS for _ in range(FILAS)]
@@ -92,6 +93,18 @@ class VentanaMapa:
         )
         self.label_marcador.pack(side="right", padx=15)
 
+        # Botón de pausa
+        tk.Button(
+            self.frame_info,
+            text="⏸ Pausa",
+            font=("Arial", 9, "bold"),
+            bg="#333355", fg="white",
+            activebackground="#444466",
+            relief="flat", padx=10, pady=4,
+            cursor="hand2",
+            command=self.abrir_pausa
+        ).pack(side="right", padx=5)
+
         # ── Frame central: mapa + panel lateral ──
         frame_central = tk.Frame(self.ventana, bg="#1a1a2e")
         frame_central.pack(padx=10, pady=10)
@@ -114,6 +127,73 @@ class VentanaMapa:
         self.frame_lateral.pack_propagate(False)
 
         self.construir_panel_lateral()
+
+    def abrir_pausa(self):
+        """Abre el menú de pausa."""
+        self.pausado = True
+
+        pausa = tk.Toplevel(self.ventana)
+        pausa.title("Pausa")
+        pausa.geometry("300x320")
+        pausa.configure(bg="#0d0d1a")
+        pausa.resizable(False, False)
+        pausa.grab_set()
+
+        # Título
+        tk.Frame(pausa, bg="#e94560", height=4).pack(fill="x")
+
+        tk.Label(pausa, text="⏸", font=("Arial", 30),
+                 bg="#0d0d1a", fg="#e94560").pack(pady=(20, 5))
+        tk.Label(pausa, text="JUEGO EN PAUSA",
+                 font=("Arial", 14, "bold"),
+                 bg="#0d0d1a", fg="white").pack()
+        tk.Label(pausa, text=f"Ronda {self.ronda_actual}",
+                 font=("Arial", 9), bg="#0d0d1a", fg="#666688").pack(pady=(2, 20))
+
+        # Botones
+        def reanudar():
+            self.pausado = False
+            pausa.destroy()
+
+        def reiniciar():
+            if messagebox.askyesno("Reiniciar", "¿Seguro que quieres reiniciar la partida?",
+                                    parent=pausa):
+                pausa.destroy()
+                self.ventana.destroy()
+                from ventanas.mapa import VentanaMapa
+                VentanaMapa(self.root, self.jugador1, self.faccion1,
+                            self.jugador2, self.faccion2)
+
+        def menu_principal():
+            if messagebox.askyesno("Menú Principal", "¿Salir al menú principal? Se perderá el progreso.",
+                                    parent=pausa):
+                pausa.destroy()
+                self.ventana.destroy()
+
+        estilo_btn = {
+            "font": ("Arial", 11, "bold"),
+            "relief": "flat",
+            "padx": 20, "pady": 10,
+            "cursor": "hand2",
+            "width": 20
+        }
+
+        tk.Button(pausa, text="▶  Reanudar",
+                  bg="#00b44d", fg="white",
+                  activebackground="#009940",
+                  command=reanudar, **estilo_btn).pack(pady=5)
+
+        tk.Button(pausa, text="🔄  Reiniciar Partida",
+                  bg="#0f3460", fg="white",
+                  activebackground="#1a4a80",
+                  command=reiniciar, **estilo_btn).pack(pady=5)
+
+        tk.Button(pausa, text="🏠  Menú Principal",
+                  bg="#333355", fg="#aaaaaa",
+                  activebackground="#444466",
+                  command=menu_principal, **estilo_btn).pack(pady=5)
+
+        tk.Frame(pausa, bg="#e94560", height=4).pack(fill="x", side="bottom")
 
     def construir_panel_lateral(self):
         """Panel con opciones de compra según la fase."""
@@ -598,6 +678,9 @@ class VentanaMapa:
 
     def turno_combate(self):
         """Ejecuta un turno de combate y programa el siguiente."""
+        if self.pausado:
+            self.ventana.after(200, self.turno_combate)
+            return
         from clases.combate import ejecutar_turno
         resultado = ejecutar_turno(
             self.torres, self.muros, self.unidades,
