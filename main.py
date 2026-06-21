@@ -24,6 +24,8 @@ def al_elegir_roles(defensor, faccion_def, atacante, faccion_atk):
 # ── Inicio del programa ──
 if __name__ == "__main__":
     inicializar_archivo()
+    from clases.musica import reproductor
+    reproductor.iniciar()  # Inicia música al abrir el juego
     root = tk.Tk()
     root.withdraw()
     VentanaLogin(tk.Toplevel(root), al_iniciar_sesion)

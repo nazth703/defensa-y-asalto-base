@@ -193,6 +193,28 @@ class VentanaMapa:
                   activebackground="#444466",
                   command=menu_principal, **estilo_btn).pack(pady=5)
 
+        # Botón música
+        from clases.musica import reproductor
+        def toggle_musica_pausa():
+            activa = reproductor.toggle()
+            btn_musica_pausa.config(
+                text="🎵 Música: ON" if activa else "🔇 Música: OFF",
+                fg="#00ff88" if activa else "#aaaaaa"
+            )
+
+        btn_musica_pausa = tk.Button(
+            pausa,
+            text="🎵 Música: ON" if reproductor.activa else "🔇 Música: OFF",
+            font=("Arial", 10),
+            bg="#1a1a2e",
+            fg="#00ff88" if reproductor.activa else "#aaaaaa",
+            activebackground="#252540",
+            relief="flat", padx=20, pady=6,
+            cursor="hand2",
+            command=toggle_musica_pausa
+        )
+        btn_musica_pausa.pack(pady=(10, 5))
+
         tk.Frame(pausa, bg="#e94560", height=4).pack(fill="x", side="bottom")
 
     def construir_panel_lateral(self):

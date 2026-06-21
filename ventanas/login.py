@@ -48,6 +48,21 @@ class VentanaLogin:
             command=self.ver_ranking
         ).pack(pady=(10, 0))
 
+        # ── Botón música ──
+        from clases.musica import reproductor
+        self.musica_activa = reproductor.activa
+        self.btn_musica = tk.Button(
+            frame_titulo,
+            text="🎵 Música: ON" if self.musica_activa else "🔇 Música: OFF",
+            font=("Arial", 9),
+            bg="#1a1a2e", fg="#aaaaaa",
+            activebackground="#252540",
+            relief="flat", padx=12, pady=4,
+            cursor="hand2",
+            command=self.toggle_musica
+        )
+        self.btn_musica.pack(pady=(5, 0))
+
         # ── Cards de jugadores ──
         frame_cards = tk.Frame(self.root, bg="#0d0d1a")
         frame_cards.pack(padx=25, pady=15, fill="x")
@@ -157,6 +172,15 @@ class VentanaLogin:
             self.entry_u2 = entry_usuario
             self.entry_p2 = entry_contrasena
             self.label_estado2 = label_estado
+
+    def toggle_musica(self):
+        """Alterna la música on/off."""
+        from clases.musica import reproductor
+        activa = reproductor.toggle()
+        if activa:
+            self.btn_musica.config(text="🎵 Música: ON", fg="#00ff88")
+        else:
+            self.btn_musica.config(text="🔇 Música: OFF", fg="#aaaaaa")
 
     def _login(self, jugador, entry_u, entry_p, label):
         usuario = entry_u.get().strip()
