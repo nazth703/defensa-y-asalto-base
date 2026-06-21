@@ -14,7 +14,7 @@ class VentanaLogin:
         self.jugador2 = None
 
         self.root.title("Defensa y Asalto de Base")
-        self.root.geometry("600x720")
+        self.root.geometry("600x780")
         self.root.configure(bg="#0d0d1a")
         self.root.resizable(False, False)
 
@@ -27,7 +27,7 @@ class VentanaLogin:
 
         # ── Título ──
         frame_titulo = tk.Frame(self.root, bg="#0d0d1a")
-        frame_titulo.pack(pady=(25, 5))
+        frame_titulo.pack(pady=(15, 3))
 
         tk.Label(frame_titulo, text="⚔️", font=("Arial", 32),
                  bg="#0d0d1a", fg="#e94560").pack()
@@ -65,14 +65,14 @@ class VentanaLogin:
 
         # ── Cards de jugadores ──
         frame_cards = tk.Frame(self.root, bg="#0d0d1a")
-        frame_cards.pack(padx=25, pady=15, fill="x")
+        frame_cards.pack(padx=25, pady=8, fill="x")
 
         self._crear_card(frame_cards, "Jugador 1", "🗡️", "#e94560", 0)
         self._crear_card(frame_cards, "Jugador 2", "🛡️", "#00b4d8", 1)
 
         # ── Botón iniciar ──
         frame_btn = tk.Frame(self.root, bg="#0d0d1a")
-        frame_btn.pack(pady=10)
+        frame_btn.pack(pady=5)
 
         self.btn_iniciar = tk.Button(
             frame_btn,
@@ -92,7 +92,7 @@ class VentanaLogin:
     def _crear_card(self, parent, titulo, icono, color_acento, idx):
         """Crea una card moderna para cada jugador."""
         # Card principal
-        card = tk.Frame(parent, bg="#13132a", pady=18, padx=20,
+        card = tk.Frame(parent, bg="#13132a", pady=12, padx=20,
                         highlightbackground=color_acento,
                         highlightthickness=2)
         card.pack(fill="x", pady=8)
