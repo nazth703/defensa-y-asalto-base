@@ -2,13 +2,13 @@
     {
         "usuario": "naza",
         "contrasena": "hola123",
-        "victorias_defensor": 3,
+        "victorias_defensor": 5,
         "victorias_atacante": 0
     },
     {
         "usuario": "Ari",
         "contrasena": "hola123",
         "victorias_defensor": 0,
-        "victorias_atacante": 1
+        "victorias_atacante": 2
     }
 ]
